@@ -20,7 +20,7 @@ class TCPMITM:
     """
 
     def __init__(self, client: TwistedTCPLayer, server: TwistedTCPLayer, attacker: TwistedTCPLayer, log: LoggerAdapter,
-                 state: RDPMITMState, recorder: Recorder, serverConnector: Coroutine, statCounter: StatCounter):
+                 state: RDPMITMState, recorder: Recorder, serverConnector: Coroutine, statCounter: StatCounter, replayFileName):
         """
         :param client: TCP layer for the client side
         :param server: TCP layer for the server side
@@ -37,6 +37,7 @@ class TCPMITM:
         self.server = server
         self.attacker = attacker
         self.log = log
+        self.replayFileName = replayFileName
         self.state = state
         self.recorder = recorder
         self.serverConnector = serverConnector
@@ -72,13 +73,14 @@ class TCPMITM:
         """
         Log the fact that a new client has connected.
         """
-        
+
         # Statistics
-        self.statCounter.start()        
+        self.statCounter.start()
         self.connectionTime = time.time()
 
         ip = self.client.transport.client[0]
-        self.log.info("New client connected from %(clientIp)s", {"clientIp": ip})
+        port = self.client.transport.client[1]
+        self.log.info("New client connected from %(clientIp)s:%(clientPort)s. Replay file name: %(replayFileName)s", {"clientIp": ip, "clientPort": port, "replayFileName": self.replayFileName})
 
     def onClientDisconnection(self, reason):
         """

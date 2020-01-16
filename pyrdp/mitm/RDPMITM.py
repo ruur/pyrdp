@@ -89,7 +89,9 @@ class RDPMITM:
         """MITM components for virtual channels"""
 
         serverConnector = self.connectToServer()
-        self.tcp = TCPMITM(self.client.tcp, self.server.tcp, self.player.tcp, self.getLog("tcp"), self.state, self.recorder, serverConnector, self.statCounter)
+        date = datetime.datetime.now()
+        replayFileName = "rdp_replay_{}_{}.pyrdp".format(date.strftime('%Y%m%d_%H-%M-%S'), date.microsecond // 1000)
+        self.tcp = TCPMITM(self.client.tcp, self.server.tcp, self.player.tcp, self.getLog("tcp"), self.state, self.recorder, serverConnector, self.statCounter, replayFileName)
         """TCP MITM component"""
 
         self.x224 = X224MITM(self.client.x224, self.server.x224, self.getLog("x224"), self.state, serverConnector, self.startTLS)
@@ -130,8 +132,6 @@ class RDPMITM:
         self.state.securitySettings.addObserver(RC4LoggingObserver(self.rc4Log))
 
         if config.recordReplays:
-            date = datetime.datetime.now()
-            replayFileName = "rdp_replay_{}_{}.pyrdp".format(date.strftime('%Y%m%d_%H-%M-%S'), date.microsecond // 1000)
             self.recorder.addTransport(FileLayer(self.config.replayDir / replayFileName))
 
         if config.enableCrawler:
