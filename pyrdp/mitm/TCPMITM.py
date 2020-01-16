@@ -4,6 +4,7 @@
 # Licensed under the GPLv3 or later.
 #
 import time
+import requests
 from logging import LoggerAdapter
 from typing import Coroutine
 
@@ -12,6 +13,7 @@ from pyrdp.logging.StatCounter import StatCounter
 from pyrdp.mitm.state import RDPMITMState
 from pyrdp.pdu.player import PlayerConnectionClosePDU
 from pyrdp.recording import Recorder
+from pyrdp.mitm.config import MITMConfig
 
 
 class TCPMITM:
@@ -20,7 +22,7 @@ class TCPMITM:
     """
 
     def __init__(self, client: TwistedTCPLayer, server: TwistedTCPLayer, attacker: TwistedTCPLayer, log: LoggerAdapter,
-                 state: RDPMITMState, recorder: Recorder, serverConnector: Coroutine, statCounter: StatCounter, replayFileName):
+            state: RDPMITMState, recorder: Recorder, serverConnector: Coroutine, statCounter: StatCounter, replayFileName, config: MITMConfig):
         """
         :param client: TCP layer for the client side
         :param server: TCP layer for the server side
@@ -33,6 +35,7 @@ class TCPMITM:
         self.statCounter = statCounter
         # To keep track of useful statistics for the connection.
 
+        self.config = config
         self.client = client
         self.server = server
         self.attacker = attacker
@@ -80,6 +83,16 @@ class TCPMITM:
 
         ip = self.client.transport.client[0]
         port = self.client.transport.client[1]
+        try:
+            body = {
+                'clientIp':ip,
+                'clientPort': port,
+                'fileName': self.replayFileName,
+                'connectTime': int(self.connectionTime)
+            }
+            requests.post('http://%s:%s/api/core/mitm' % (self.config.serverIp, self.config.serverPort), data = body)
+        except Exception as e:
+            print(str(e))
         self.log.info("New client connected from %(clientIp)s:%(clientPort)s. Replay file name: %(replayFileName)s", {"clientIp": ip, "clientPort": port, "replayFileName": self.replayFileName})
 
     def onClientDisconnection(self, reason):

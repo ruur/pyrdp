@@ -62,6 +62,9 @@ class MITMConfig:
         self.crawlerIgnoreFileName: str = None
         """Path to the crawler ignore configuration file"""
 
+        self.serverIp: str = '10.211.55.2'
+        self.serverPort: str = '7001'
+
     @property
     def replayDir(self) -> Path:
         """

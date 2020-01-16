@@ -91,7 +91,7 @@ class RDPMITM:
         serverConnector = self.connectToServer()
         date = datetime.datetime.now()
         replayFileName = "rdp_replay_{}_{}.pyrdp".format(date.strftime('%Y%m%d_%H-%M-%S'), date.microsecond // 1000)
-        self.tcp = TCPMITM(self.client.tcp, self.server.tcp, self.player.tcp, self.getLog("tcp"), self.state, self.recorder, serverConnector, self.statCounter, replayFileName)
+        self.tcp = TCPMITM(self.client.tcp, self.server.tcp, self.player.tcp, self.getLog("tcp"), self.state, self.recorder, serverConnector, self.statCounter, replayFileName, config)
         """TCP MITM component"""
 
         self.x224 = X224MITM(self.client.x224, self.server.x224, self.getLog("x224"), self.state, serverConnector, self.startTLS)
